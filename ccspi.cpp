@@ -48,6 +48,10 @@
 #include "cc3000_common.h"
 //#include "debug.h"
 
+#define NO_PORTD_PINCHANGES
+#define NO_PORTC_PINCHANGES
+#include "PinChangeInt.h"
+
 extern uint8_t g_csPin, g_irqPin, g_vbatPin, g_IRQnum, g_SPIspeed;
 
 #define READ                            (3)
@@ -109,12 +113,13 @@ uint8_t ccspi_mySPICTRL, ccspi_oldSPICTRL;
 #endif
 
 // CC3000 chip select + SPI config
+// XXX: incompatible pins
 #define CC3000_ASSERT_CS {     \
-  digitalWrite(g_csPin, LOW);  \
+  PORTD &= ~(1<<5); \
   SpiConfigPush(); }
 // CC3000 chip deselect + SPI restore
 #define CC3000_DEASSERT_CS {   \
-  digitalWrite(g_csPin, HIGH); \
+  PORTD |= (1<<5); \
   SpiConfigPop(); }
 
 
@@ -233,7 +238,7 @@ int init_spi(void)
   delay(500);
 
   /* Set CS pin to output (don't de-assert yet) */
-  pinMode(g_csPin, OUTPUT);
+  DDRD |= (1<<5); // PD5 as output
 
   /* Set interrupt/gpio pin to input */
   pinMode(g_irqPin, INPUT);
@@ -504,7 +509,7 @@ void SpiPauseSpi(void)
   //DEBUGPRINT_F("\tCC3000: SpiPauseSpi\n\r");
 
   ccspi_int_enabled = 0;
-  detachInterrupt(g_IRQnum);
+  PCintPort::detachInterrupt(g_irqPin);
 }
 
 /**************************************************************************/
@@ -517,7 +522,7 @@ void SpiResumeSpi(void)
   //DEBUGPRINT_F("\tCC3000: SpiResumeSpi\n\r");
 
   ccspi_int_enabled = 1;
-  attachInterrupt(g_IRQnum, SPI_IRQ, FALLING);
+  PCintPort::attachInterrupt(g_irqPin, &SPI_IRQ, FALLING);
 }
 
 /**************************************************************************/
@@ -616,7 +621,7 @@ void WlanInterruptEnable()
   //DEBUGPRINT_F("\tCC3000: WlanInterruptEnable.\n\r");
   // delay(100);
   ccspi_int_enabled = 1;
-  attachInterrupt(g_IRQnum, SPI_IRQ, FALLING);
+  PCintPort::attachInterrupt(g_irqPin, &SPI_IRQ, FALLING);
 }
 
 /**************************************************************************/
@@ -628,7 +633,7 @@ void WlanInterruptDisable()
 {
   //DEBUGPRINT_F("\tCC3000: WlanInterruptDisable\n\r");
   ccspi_int_enabled = 0;
-  detachInterrupt(g_IRQnum);
+  PCintPort::detachInterrupt(g_irqPin);
 }
 
 //*****************************************************************************

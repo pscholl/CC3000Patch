@@ -53,6 +53,7 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 
+#include <HardwareSerial.h>
 #include "nvmem.h"
 #include "hci.h"
 #include "socket.h"
@@ -248,12 +249,16 @@ unsigned char nvmem_write_patch(unsigned long ulFileId, unsigned long spLength, 
 
 	while ((status == 0) && (spLength >= SP_PORTION_SIZE))
 	{
+    Serial.println("#");
 	  for (uint8_t i=0; i<SP_PORTION_SIZE; i++) {
-	  #ifdef TEENSY3
-		rambuffer[i] = *(spData + i + offset);
-		#else
-		rambuffer[i] = pgm_read_byte(spData + i + offset);
-		#endif
+	  //#ifdef TEENSY3
+		//rambuffer[i] = *(spData + i + offset);
+		//#else
+		//rambuffer[i] = pgm_read_byte(spData + i + offset);
+		//#endif
+      while (Serial.available() <= 0)
+        ;
+      rambuffer[i] = Serial.read();
 	  }
 #if (DEBUG_MODE == 1)
 	  PRINT_F("Writing: "); printDec16(offset); PRINT_F("\t");
@@ -265,6 +270,7 @@ unsigned char nvmem_write_patch(unsigned long ulFileId, unsigned long spLength, 
 	  PRINT_F("\n\r");
 #endif
 	  status = nvmem_write(ulFileId, SP_PORTION_SIZE, offset, rambuffer);
+          //status = 0;
 	  offset += SP_PORTION_SIZE;
 	  spLength -= SP_PORTION_SIZE;
 	  spDataPtr += SP_PORTION_SIZE;
@@ -278,9 +284,16 @@ unsigned char nvmem_write_patch(unsigned long ulFileId, unsigned long spLength, 
 	
 	if (spLength != 0)
 	{
-	  memcpy_P(rambuffer, spDataPtr, SP_PORTION_SIZE);
+          Serial.println("#");
+	  for (int i=0; i<spLength; i++) {
+            while (Serial.available() <= 0)
+              ;
+            rambuffer[i] = Serial.read();
+          }
+          
 	  // if reached here, a reminder is left
 	  status = nvmem_write(ulFileId, spLength, offset, rambuffer);
+          //status = 0;
 	}
 	
 	return status;

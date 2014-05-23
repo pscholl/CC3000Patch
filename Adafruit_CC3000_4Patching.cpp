@@ -213,27 +213,27 @@ Adafruit_CC3000::Adafruit_CC3000(uint8_t csPin, uint8_t irqPin, uint8_t vbatPin,
 /**************************************************************************/
 bool Adafruit_CC3000::begin(uint8_t patchReq)
 {
-  #ifndef CORE_ADAX
-  // determine irq #
-  #ifdef TEENSY 3
-  g_IRQnum = g_irqPin;
-  #else
-  for (uint8_t i=0; i<sizeof(dreqinttable); i+=2) {
-    if (g_irqPin == dreqinttable[i]) {
-      g_IRQnum = dreqinttable[i+1];
-    }
-  }
-  #endif
-  if (g_IRQnum == 0xFF) {
-//    if (CC3KPrinter != 0) {
-//      CC3KPrinter->println(F("IRQ pin is not an INT pin!"));
-//     }
-    return false;
-  }
-  #else
-  g_IRQnum = g_irqPin;
-  // (almost) every single pin on Xmega supports interrupt
-  #endif
+//  #ifndef CORE_ADAX
+//  // determine irq #
+//  #ifdef TEENSY 3
+//  g_IRQnum = g_irqPin;
+//  #else
+//  for (uint8_t i=0; i<sizeof(dreqinttable); i+=2) {
+//    if (g_irqPin == dreqinttable[i]) {
+//      g_IRQnum = dreqinttable[i+1];
+//    }
+//  }
+//  #endif
+//  if (g_IRQnum == 0xFF) {
+////    if (CC3KPrinter != 0) {
+////      CC3KPrinter->println(F("IRQ pin is not an INT pin!"));
+////     }
+//    return false;
+//  }
+//  #else
+//  g_IRQnum = g_irqPin;
+//  // (almost) every single pin on Xmega supports interrupt
+//  #endif
 
   init_spi();
 
