@@ -153,3 +153,9 @@ waitForEnd();
 abc=raw_input("all done. put jnode into programming mode and press a key")
 sleep(2)
 call('dfu-programmer atmega32u4 erase', shell=True)
+
+import os.path
+if os.path.isfile('default-prog.hex'):
+    call('dfu-programmer atmega32u4 flash default-prog.hex', shell=True)
+    call('dfu-programmer atmega32u4 reset', shell=True)
+
